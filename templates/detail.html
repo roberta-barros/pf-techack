@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title mb-0">{{ data.url }}</h5>
+    <div class="mb-3">
+      <span class="badge {% if data.risk.label == 'Alto risco' %}badge-high{% elif data.risk.label == 'Risco moderado' %}badge-medium{% else %}badge-safe{% endif %}">
+        {{ data.risk.label }} — Score {{ data.risk.score }}
+      </span>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <h6>Resumo</h6>
+        <ul>
+          {% for r in data.risk.reasons %}
+            <li>{{ r }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <h6>Técnicos</h6>
+        <ul class="small">
+          <li>Domínio: <strong>{{ data.domain }}</strong></li>
+          <li>Subdomínios: {{ data.subdomains }}</li>
+          <li>Dígitos/total no domínio: {{ '%.2f'|format(data.digits_ratio) }}</li>
+          <li>DNS Dinâmico: {{ 'Sim' if data.dynamic_dns else 'Não' }}</li>
+          <li>Redirects: {{ data.redirects.count if data.redirects.ok else 'erro' }}{% if data.redirects.cross_domain %} (para outro domínio){% endif %}</li>
+        </ul>
+      </div>
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col-md-6">
+        <h6>Listas conhecidas</h6>
+        <ul class="small">
+          <li>OpenPhish: 
+            {% if data.blacklists.OpenPhish.ok %}
+              {% if data.blacklists.OpenPhish.match_exact %}match exato{% elif data.blacklists.OpenPhish.match_host %}host listado{% else %}não listado{% endif %}
+            {% else %}
+              erro ({{ data.blacklists.OpenPhish.error }})
+            {% endif %}
+          </li>
+        </ul>
+        <h6>Similaridade com marcas</h6>
+        <p class="small mb-1">Mais próximo de: <strong>{{ data.brand_similarity.best_brand }}</strong></p>
+        <p class="small">Distância normalizada: {{ '%.2f'|format(data.brand_similarity.ratio or 0) }}</p>
+      </div>
+      <div class="col-md-6">
+        <h6>SSL/TLS</h6>
+        <ul class="small">
+          {% if data.ssl.ok %}
+            <li>Emissor: {{ data.ssl.issuer }}</li>
+            <li>CN: {{ data.ssl.subject }}</li>
+            <li>Hostname confere? {{ 'Sim' if data.ssl.hostname_match else 'Não' }}</li>
+            <li>Expira em (dias): {{ data.ssl.days_to_expiry }}</li>
+          {% else %}
+            <li>Erro ao obter: {{ data.ssl.error }}</li>
+          {% endif %}
+        </ul>
+        <h6>Conteúdo</h6>
+        <ul class="small">
+          {% if data.content.ok %}
+            <li>Status HTTP: {{ data.content.status }}</li>
+            <li>Formulários: {{ data.content.forms }}</li>
+            <li>Campo de senha? {{ 'Sim' if data.content.has_password_field else 'Não' }}</li>
+            <li>Palavras sensíveis: {{ data.content.keywords|join(", ") }}</li>
+          {% else %}
+            <li>Erro ao buscar: {{ data.content.error }}</li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+    <hr>
+    <pre class="small bg-light p-3 rounded">{{ data|tojson(indent=2) }}</pre>
+  </div>
+</div>
+{% endblock %}

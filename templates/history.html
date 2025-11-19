@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title">Histórico de URLs verificadas</h5>
+    <div class="table-responsive">
+      <table class="table table-striped table-sm align-middle">
+        <thead><tr><th>#</th><th>Quando</th><th>URL</th><th>Domínio</th><th>Score</th><th>Classificação</th></tr></thead>
+        <tbody>
+          {% for id, ts, url, domain, score, label in rows %}
+          <tr>
+            <td>{{ id }}</td>
+            <td>{{ ts }}</td>
+            <td><a href="{{ url_for('result_detail', rid=id) }}">{{ url }}</a></td>
+            <td>{{ domain }}</td>
+            <td>{{ score }}</td>
+            <td>{{ label }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-muted">Sem dados ainda.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
